@@ -71,7 +71,7 @@ All responses follow:
 
 | Method | Endpoint | Body | Description |
 |--------|----------|------|-------------|
-| POST | `/api/auth/register` | `email, password, name?, employeeId?` | Create account |
+| POST | `/api/auth/register` | `email, password, name?` | Create account |
 | GET | `/api/auth/verify-email/:token` | — | Verify email link |
 | POST | `/api/auth/resend-verification` | `email` | Resend verification email |
 | POST | `/api/auth/login` | `email, password` | Login → tokens |

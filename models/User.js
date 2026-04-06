@@ -24,12 +24,6 @@ const userSchema = new mongoose.Schema(
       full: { type: String, trim: true } // countryCode + number
     },
 
-    employeeId: {
-      type: String,
-      trim: true,
-      sparse: true
-    },
-
     // ─── Password (local auth) ───────────────────────────────────────────────
     password: {
       type: String,

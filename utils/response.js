@@ -1,33 +1,47 @@
-const { createLogger, format, transports } = require('winston');
-const path = require('path');
+/**
+ * Standardised API response helpers
+ */
 
-const logger = createLogger({
-  level: process.env.NODE_ENV === 'production' ? 'warn' : 'debug',
-  format: format.combine(
-    format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss' }),
-    format.errors({ stack: true }),
-    format.splat(),
-    format.json()
-  ),
-  transports: [
-    new transports.Console({
-      format: format.combine(
-        format.colorize(),
-        format.printf(({ timestamp, level, message, stack }) => {
-          return stack
-            ? `${timestamp} [${level}]: ${message}\n${stack}`
-            : `${timestamp} [${level}]: ${message}`;
-        })
-      )
-    }),
-    new transports.File({
-      filename: path.join('logs', 'error.log'),
-      level: 'error'
-    }),
-    new transports.File({
-      filename: path.join('logs', 'combined.log')
-    })
-  ]
-});
+const sendSuccess = (res, data = {}, message = 'Success', statusCode = 200) => {
+  return res.status(statusCode).json({
+    success: true,
+    message,
+    data
+  });
+};
 
-module.exports = logger;
+const sendError = (res, message = 'Something went wrong', statusCode = 500, errors = null) => {
+  const response = { success: false, message };
+  if (errors) response.errors = errors;
+  return res.status(statusCode).json(response);
+};
+
+const sendCreated = (res, data = {}, message = 'Created successfully') => {
+  return sendSuccess(res, data, message, 201);
+};
+
+const sendUnauthorized = (res, message = 'Unauthorized') => {
+  return sendError(res, message, 401);
+};
+
+const sendForbidden = (res, message = 'Forbidden') => {
+  return sendError(res, message, 403);
+};
+
+const sendNotFound = (res, message = 'Not found') => {
+  return sendError(res, message, 404);
+};
+
+const sendValidationError = (res, errors) => {
+  return sendError(res, 'Validation failed', 422, errors);
+};
+
+module.exports = {
+  sendSuccess,
+  sendError,
+  sendCreated,
+  sendUnauthorized,
+  sendForbidden,
+  sendNotFound,
+  sendValidationError
+};

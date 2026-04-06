@@ -7,7 +7,7 @@ const logger = require('../utils/logger');
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
-  const { email, password, name, employeeId } = req.body;
+  const { email, password, name } = req.body;
 
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {
@@ -15,13 +15,13 @@ const register = async (req, res) => {
   }
 
   const verificationToken = jwtService.generateEmailVerificationToken();
+  console.log("👉 THE REAL TOKEN TO PUT IN POSTMAN:", verificationToken);
   const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
 
   const user = await User.create({
     email: email.toLowerCase(),
     password,
     name,
-    employeeId: employeeId || undefined,
     authProviders: ['local'],
     emailVerificationToken: crypto.createHash('sha256').update(verificationToken).digest('hex'),
     emailVerificationExpires: verificationExpires
@@ -45,6 +45,8 @@ const verifyEmail = async (req, res) => {
     emailVerificationToken: hashedToken,
     emailVerificationExpires: { $gt: Date.now() }
   });
+
+  console.log(user, "user")
 
   if (!user) return sendError(res, 'Verification link is invalid or has expired', 400);
 
@@ -108,6 +110,7 @@ const forgotPassword = async (req, res) => {
   }
 
   const resetToken = jwtService.generatePasswordResetToken();
+  console.log("👉 THE REAL TOKEN TO PUT IN POSTMAN:", resetToken);
   user.passwordResetToken = crypto.createHash('sha256').update(resetToken).digest('hex');
   user.passwordResetExpires = new Date(Date.now() + 60 * 60 * 1000); // 1h
   await user.save();

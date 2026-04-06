@@ -14,7 +14,6 @@ const schemas = {
         'string.pattern.base': 'Password must contain at least one uppercase letter, one lowercase letter, and one number'
       }),
     name: Joi.string().min(2).max(100).optional(),
-    employeeId: Joi.string().max(50).optional()
   }),
 
   login: Joi.object({
