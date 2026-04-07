@@ -1,6 +1,5 @@
 require('dotenv').config();
 require('express-async-errors');
-
 const express = require('express');
 const helmet = require('helmet');
 const cors = require('cors');
@@ -20,7 +19,7 @@ app.use(helmet());
 // ─── CORS ─────────────────────────────────────────────────────────────────────
 app.use(
   cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:3000',
+    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
     credentials: true,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization']
