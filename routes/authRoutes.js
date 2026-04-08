@@ -27,6 +27,8 @@ router.post(
   emailCtrl.register
 );
 
+router.patch('/me', requireAuth, emailCtrl.updateMe);
+
 // GET /api/auth/verify-email/:token
 router.get('/verify-email/:token', emailCtrl.verifyEmail);
 

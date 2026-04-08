@@ -7,32 +7,55 @@ const logger = require('../utils/logger');
 
 // ─── Register ─────────────────────────────────────────────────────────────────
 const register = async (req, res) => {
-  const { email, password, name } = req.body;
-
+  const { email, password, employeeId } = req.body;   // ← accept employeeId
+ 
   const existing = await User.findOne({ email: email.toLowerCase() });
   if (existing) {
     return sendError(res, 'An account with this email already exists', 409);
   }
-
-  const verificationToken = jwtService.generateEmailVerificationToken();
-  console.log("👉 THE REAL TOKEN TO PUT IN POSTMAN:", verificationToken);
+ 
+  const verificationToken  = jwtService.generateEmailVerificationToken();
   const verificationExpires = new Date(Date.now() + 24 * 60 * 60 * 1000); // 24h
-
+ 
   const user = await User.create({
     email: email.toLowerCase(),
     password,
-    name,
+    ...(employeeId ? { employeeId } : {}),   // store if provided
     authProviders: ['local'],
-    emailVerificationToken: crypto.createHash('sha256').update(verificationToken).digest('hex'),
-    emailVerificationExpires: verificationExpires
+    emailVerificationToken:   crypto.createHash('sha256').update(verificationToken).digest('hex'),
+    emailVerificationExpires: verificationExpires,
   });
-
+ 
+  // Issue tokens right away so the next screen (NameScreen) can call PATCH /me
+  const device       = req.headers['user-agent'] || 'unknown';
+  const accessToken  = jwtService.generateAccessToken(user._id);
+  const refreshToken = await jwtService.generateRefreshToken(user._id, device);
+ 
   // Send verification email (non-blocking)
-  emailService.sendEmailVerification(user.email, user.name, verificationToken).catch((err) =>
-    logger.error('Failed to send verification email:', err)
-  );
+  emailService.sendEmailVerification(user.email, user.name, verificationToken)
+    .catch((err) => logger.error('Failed to send verification email:', err));
+ 
+  return sendCreated(res, {
+    accessToken,
+    refreshToken,
+    user: user.toPublicJSON(),
+  }, 'Account created. Please verify your email.');
+};
 
-  return sendCreated(res, { email: user.email }, 'Account created. Please verify your email.');
+const updateMe = async (req, res) => {
+  const { name } = req.body;
+ 
+  if (!name || typeof name !== 'string' || name.trim().length === 0) {
+    return sendError(res, 'Name is required', 400);
+  }
+ 
+  const user = await User.findByIdAndUpdate(
+    req.user._id,
+    { name: name.trim() },
+    { new: true, runValidators: true }
+  );
+ 
+  return sendSuccess(res, { user: user.toPublicJSON() }, 'Profile updated');
 };
 
 // ─── Verify Email ─────────────────────────────────────────────────────────────
@@ -177,6 +200,7 @@ const me = async (req, res) => {
 
 module.exports = {
   register,
+  updateMe,
   verifyEmail,
   resendVerification,
   login,
