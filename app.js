@@ -8,6 +8,7 @@ const passport = require('./config/passport');
 
 const connectDB = require('./config/database');
 const authRoutes = require('./routes/authRoutes');
+const onboardingRoutes = require('./routes/onboardingRoutes')
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./utils/logger');
 
@@ -49,6 +50,7 @@ app.get('/health', (req, res) => {
 
 // ─── API Routes ───────────────────────────────────────────────────────────────
 app.use('/api/auth', authRoutes);
+app.use('/api/onboarding', onboardingRoutes);
 
 // ─── 404 Handler ─────────────────────────────────────────────────────────────
 app.use((req, res) => {

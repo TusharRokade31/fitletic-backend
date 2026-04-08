@@ -34,6 +34,23 @@ const userSchema = new mongoose.Schema(
     // ─── Profile ────────────────────────────────────────────────────────────
     profilePicture: { type: String },
 
+    onboarding: {
+    isComplete: { type: Boolean, default: false },
+    sex: { type: String, enum: ['male', 'female'] },
+    age: { type: Number },
+    weight: { value: { type: Number }, unit: { type: String, enum: ['kg', 'lb'], default: 'kg' } },
+    height: { value: { type: Number }, unit: { type: String, enum: ['cm', 'ft'], default: 'cm' } },
+    goal: { type: String, enum: ['weight_loss', 'muscle_gain', 'healthy_foods'] },
+    activityLevel: {
+      type: String,
+      enum: ['mostly_sitting', 'often_standing', 'regularly_walking', 'physically_intense']
+    },
+    targetWeight: { value: { type: Number }, unit: { type: String, enum: ['kg', 'lb'], default: 'kg' } },
+    medicalConditions: [{ type: String }],
+    foodPreference: { type: String, enum: ['jain', 'non_jain'] },
+    referralCode: { type: String, trim: true }
+  },
+
     // ─── Auth Providers ──────────────────────────────────────────────────────
     // Tracks which providers this user has used
     authProviders: {
@@ -126,6 +143,7 @@ userSchema.methods.toPublicJSON = function () {
     name: this.name,
     email: this.email,
     phone: this.phone,
+    onboarding: this.onboarding,
     profilePicture: this.profilePicture,
     isEmailVerified: this.isEmailVerified,
     isPhoneVerified: this.isPhoneVerified,
